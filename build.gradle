@@ -19,6 +19,10 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    maven { url 'https://maven.wispforest.io/releases/' }
+    maven {
+        url 'https://maven.su5ed.dev/releases'
+    }
 }
 
 base {
@@ -112,6 +116,11 @@ configurations {
 }
 
 dependencies {
+    implementation "io.wispforest:owo-lib-neoforge:${project.owo_version}"
+//    accessTransformer "io.wispforest:owo-lib-neoforge:${project.owo_version}"
+    interfaceInjectionData "io.wispforest:owo-lib-neoforge:${project.owo_version}"
+
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
