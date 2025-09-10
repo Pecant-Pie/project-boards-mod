@@ -1,5 +1,11 @@
 package com.pecantpie;
 
+import com.mojang.serialization.MapCodec;
+import com.pecantpie.block.TaskBoardBlock;
+import com.pecantpie.block.TaskBoardBlockEntity;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -34,6 +40,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.function.Supplier;
+
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(ProjectBoards.MODID)
 public class ProjectBoards
@@ -44,27 +52,46 @@ public class ProjectBoards
     private static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "projectboards" namespace
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
+
+    // Create a Deferred Register to hold BlockEntityTypes which will all be registered under the "projectboards" namespace
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, ProjectBoards.MODID);
+
     // Create a Deferred Register to hold Items which will all be registered under the "projectboards" namespace
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
+
     // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "projectboards" namespace
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
-    // Creates a new Block with the id "projectboards:example_block", combining the namespace and path
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
-    // Creates a new BlockItem with the id "projectboards:example_block", combining the namespace and path
-    public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
+    // Task Slip item
+    public static final DeferredItem<Item> TASK_SLIP = ITEMS.registerSimpleItem("task_slip");
 
-    // Creates a new food item with the id "projectboards:example_id", nutrition 1 and saturation 2
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
-            .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
+    // Creates a new Block with the id "projectboards:task_board", combining the namespace and path
+    public static final DeferredBlock<TaskBoardBlock> TASK_BOARD = BLOCKS.registerBlock("task_board",
+            (props) -> new TaskBoardBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).sound(SoundType.WOOD)));
+    // Creates a new BlockItem with the id "projectboards:task_board", combining the namespace and path
+    public static final DeferredItem<BlockItem> TASK_BOARD_ITEM = ITEMS.register("task_board", () -> new BlockItem(TASK_BOARD.get(), new Item.Properties()));
+
+
+    public static final DeferredRegister<MapCodec<? extends Block>> REGISTRAR = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, "yourmodid");
+
+    public static final Supplier<MapCodec<TaskBoardBlock>> SIMPLE_CODEC = REGISTRAR.register(
+            "simple",
+            () -> BlockBehaviour.simpleCodec(TaskBoardBlock::new)
+    );
+
+//    public static final DeferredHolder<BlockEntityType<TaskBoardBlockEntity>, > TASK_BOARD_BLOCK_ENTITY =
+//            BLOCK_ENTITY_TYPES.register("task_board_block_entity", () -> BlockEntityType.Builder.of(TaskBoardBlockEntity::new, TASK_BOARD.get()).build(null));
+
+
 
     // Creates a creative tab with the id "projectboards:example_tab" for the example item, that is placed after the combat tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> PROJECT_BOARDS_TAB = CREATIVE_MODE_TABS.register("project_boards", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.projectboards")) //The language key for the title of your CreativeModeTab
             .withTabsBefore(CreativeModeTabs.COMBAT)
-            .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
+            .icon(() -> TASK_BOARD_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+                output.accept(TASK_BOARD_ITEM.get());
+                output.accept(TASK_SLIP.get());
             }).build());
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -110,7 +137,7 @@ public class ProjectBoards
     private void addCreative(BuildCreativeModeTabContentsEvent event)
     {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS)
-            event.accept(EXAMPLE_BLOCK_ITEM);
+            event.accept(TASK_SLIP);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

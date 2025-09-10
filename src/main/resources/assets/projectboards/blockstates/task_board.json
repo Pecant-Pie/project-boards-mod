@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "projectboards:block/task_board",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "projectboards:block/task_board",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "projectboards:block/task_board"
+    },
+    "facing=south": {
+      "model": "projectboards:block/task_board",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "projectboards:block/task_board",
+      "x": 270
+    },
+    "facing=west": {
+      "model": "projectboards:block/task_board",
+      "y": 270
+    }
+  }
+}

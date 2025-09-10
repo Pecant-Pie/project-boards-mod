@@ -1,5 +1,5 @@
 {
-  "itemGroup.projectboards": "Example Mod Tab",
-  "block.projectboards.example_block": "Example Block",
-  "item.projectboards.example_item": "Example Item"
+  "itemGroup.projectboards": "Project Boards Tab",
+  "block.projectboards.task_board": "Task Board",
+  "item.projectboards.task_slip": "Task Slip"
 }
