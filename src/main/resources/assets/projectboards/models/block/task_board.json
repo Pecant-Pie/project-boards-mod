@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "bottom": "projectboards:block/task_board_side",
-    "side": "projectboards:block/task_board_side",
-    "top": "projectboards:block/task_board_side",
+    "bottom": "minecraft:block/oak_log",
+    "side": "minecraft:block/oak_log",
+    "top": "minecraft:block/oak_log",
     "front": "projectboards:block/task_board_front",
-    "particle": "projectboards:block/task_board_side"
+    "particle": "minecraft:block/oak_log"
   },
   "elements": [
     {   "from": [ 0, 0, 0 ],
