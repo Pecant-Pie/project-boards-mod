@@ -79,8 +79,8 @@ public class ProjectBoards
             () -> BlockBehaviour.simpleCodec(TaskBoardBlock::new)
     );
 
-//    public static final DeferredHolder<BlockEntityType<TaskBoardBlockEntity>, > TASK_BOARD_BLOCK_ENTITY =
-//            BLOCK_ENTITY_TYPES.register("task_board_block_entity", () -> BlockEntityType.Builder.of(TaskBoardBlockEntity::new, TASK_BOARD.get()).build(null));
+    public static final Supplier<BlockEntityType<TaskBoardBlockEntity>> TASK_BOARD_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("task_board_block_entity", () -> BlockEntityType.Builder.of(TaskBoardBlockEntity::new, TASK_BOARD.get()).build(null));
 
 
 
@@ -105,6 +105,10 @@ public class ProjectBoards
         BLOCKS.register(modEventBus);
         // Register the Deferred Register to the mod event bus so items get registered
         ITEMS.register(modEventBus);
+
+        // Register the Deferred Register to the mod event bus so block entities get registered
+        BLOCK_ENTITY_TYPES.register(modEventBus);
+
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
 
@@ -128,7 +132,6 @@ public class ProjectBoards
         if (Config.logDirtBlock)
             LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
 
-        LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
 
         Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
     }
