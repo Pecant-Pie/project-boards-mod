@@ -133,6 +133,10 @@ public class TaskBoardBlock extends BaseEntityBlock {
                         tbbe.inventory.setStackInSlot(0, taskFromPlayer);
                         level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 1f);
                     }
+                } else {
+                    ItemStack taskFromPlayer = stack.split(1);
+                    tbbe.inventory.setStackInSlot(0, taskFromPlayer);
+                    level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 2f);
                 }
             } else {
                 ItemStack taskFromPlayer = stack.split(1);

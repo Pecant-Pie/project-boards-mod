@@ -58,14 +58,14 @@ public class TaskBoardBlockEntity extends BlockEntity {
     }
 
 // TODO: figure out why these two methods break the useItemOn functionality!! (Use Debug mode!)
-//
-//    @Override
-//    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
-//        return ClientboundBlockEntityDataPacket.create(this);
-//    }
-//
-//    @Override
-//    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-//        return saveWithoutMetadata(registries);
-//    }
+
+    @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
 }
