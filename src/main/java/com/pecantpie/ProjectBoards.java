@@ -3,9 +3,11 @@ package com.pecantpie;
 import com.mojang.serialization.MapCodec;
 import com.pecantpie.block.TaskBoardBlock;
 import com.pecantpie.block.TaskBoardBlockEntity;
+import com.pecantpie.block.TaskBoardRenderer;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -161,6 +163,11 @@ public class ProjectBoards
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+        }
+
+        @SubscribeEvent
+        public static void registerBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(TASK_BOARD_BLOCK_ENTITY.get(), TaskBoardRenderer::new);
         }
     }
 }

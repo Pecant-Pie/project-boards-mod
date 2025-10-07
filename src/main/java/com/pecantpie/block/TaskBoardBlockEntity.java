@@ -1,9 +1,13 @@
 package com.pecantpie.block;
 
+import com.pecantpie.Config;
 import com.pecantpie.ProjectBoards;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -17,7 +21,10 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class TaskBoardBlockEntity extends BlockEntity {
+    private static final int TASK_SLOT = 0;
 
     public final ItemStackHandler inventory = new ItemStackHandler(1) {
         @Override
@@ -42,6 +49,18 @@ public class TaskBoardBlockEntity extends BlockEntity {
 
     public TaskBoardBlockEntity( BlockPos pos, BlockState blockState) {
         super(ProjectBoards.TASK_BOARD_BLOCK_ENTITY.get(), pos, blockState);
+    }
+
+    public Component getTaskName() {
+        // check if task board has a task
+        if (!inventory.getStackInSlot(TASK_SLOT).isEmpty()) {
+            ItemStack item = inventory.getStackInSlot(TASK_SLOT);
+            // check if task has a non-default name.
+            if (!Objects.equals(item.get(DataComponents.CUSTOM_NAME), Component.literal(Config.defaultTaskName))) {
+                return item.getDisplayName().toFlatList().get(1).plainCopy().setStyle(Style.EMPTY);
+            }
+        }
+        return Component.empty();
     }
 
 
