@@ -76,7 +76,6 @@ public class TaskBoardBlockEntity extends BlockEntity {
         inventory.deserializeNBT(registries, tag.getCompound("inventory"));
     }
 
-// TODO: figure out why these two methods break the useItemOn functionality!! (Use Debug mode!)
 
     @Override
     public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
