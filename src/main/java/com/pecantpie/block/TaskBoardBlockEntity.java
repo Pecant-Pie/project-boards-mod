@@ -2,28 +2,36 @@ package com.pecantpie.block;
 
 import com.pecantpie.Config;
 import com.pecantpie.ProjectBoards;
+import com.pecantpie.screen.TaskBoardMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSink;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.ticks.ContainerSingleItem;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class TaskBoardBlockEntity extends BlockEntity {
+import static com.pecantpie.Config.defaultTaskName;
+import static com.pecantpie.Config.taskNameMaxLength;
+import static com.pecantpie.ProjectBoards.MODID;
+
+public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
     private static final int TASK_SLOT = 0;
 
     public final ItemStackHandler inventory = new ItemStackHandler(1) {
@@ -63,6 +71,86 @@ public class TaskBoardBlockEntity extends BlockEntity {
         return Component.empty();
     }
 
+    public String getTaskString() {
+        return getTaskName().getString();
+    }
+
+
+    /// returns true if there is a task slip inside and the name is valid, false otherwise
+    public boolean setTaskName(String name) {
+        // check if task board has a task AND the name fits!
+        if (this.hasTask() && this.isTaskNameValid(name)) {
+            this.forceSetTaskName(name);
+            markUpdated();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
+    /// returns true if there is NO task slip inside and the name is valid, false otherwise
+    public boolean createNewTask(String name) {
+        if (!this.hasTask() && this.isTaskNameValid(name)) {
+            forceCreateNewTask();
+            forceSetTaskName(name);
+            markUpdated();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /// returns true if there is NO task slip inside, false otherwise
+    /// creates a task with the default name, from the Mod's config
+    public boolean createNewTask() {
+        return createNewTask(defaultTaskName);
+    }
+
+
+    public boolean hasTask() {
+        return !inventory.getStackInSlot(TASK_SLOT).isEmpty();
+    }
+
+    public boolean isTaskNameValid(String name) {
+        return name.length() < taskNameMaxLength;
+    }
+
+    private void markUpdated() {
+        this.setChanged();
+        this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+    }
+
+// ******************
+// ** ABSTRACTIONS **
+// ******************
+
+    protected void forceSetTaskName(String name) {
+        ItemStack item = inventory.getStackInSlot(TASK_SLOT);
+        item.set(DataComponents.CUSTOM_NAME, Component.literal(name));
+    }
+
+    protected void forceCreateNewTask() {
+        ItemStack newTask = new ItemStack(ProjectBoards.TASK_SLIP.get());
+        inventory.setStackInSlot(TASK_SLOT, newTask);
+    }
+
+// ***************
+// ** OVERRIDES **
+// ***************
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translationArg(ResourceLocation.fromNamespaceAndPath(MODID, "gui/edit_task_screen"));
+    }
+
+
+    @Override
+    public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
+        return new TaskBoardMenu(i, inventory, this);
+    }
+
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -76,7 +164,6 @@ public class TaskBoardBlockEntity extends BlockEntity {
         inventory.deserializeNBT(registries, tag.getCompound("inventory"));
     }
 
-
     @Override
     public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
@@ -86,4 +173,7 @@ public class TaskBoardBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
     }
+
+
+
 }

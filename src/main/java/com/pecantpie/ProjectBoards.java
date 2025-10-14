@@ -4,10 +4,15 @@ import com.mojang.serialization.MapCodec;
 import com.pecantpie.block.TaskBoardBlock;
 import com.pecantpie.block.TaskBoardBlockEntity;
 import com.pecantpie.block.TaskBoardRenderer;
+import com.pecantpie.screen.TaskBoardMenu;
+import com.pecantpie.screen.TaskBoardScreen;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -61,6 +66,9 @@ public class ProjectBoards
     // Create a Deferred Register to hold Items which will all be registered under the "projectboards" namespace
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
+    // Create a register to hold ContainerMenus
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ProjectBoards.MODID);
+
     // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "projectboards" namespace
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
@@ -73,6 +81,9 @@ public class ProjectBoards
     // Creates a new BlockItem with the id "projectboards:task_board", combining the namespace and path
     public static final DeferredItem<BlockItem> TASK_BOARD_ITEM = ITEMS.register("task_board", () -> new BlockItem(TASK_BOARD.get(), new Item.Properties()));
 
+
+    // Task Board Menu registration!!
+    public static final DeferredHolder<MenuType<?>, MenuType<TaskBoardMenu>> TASK_BOARD_MENU = MENUS.register("task_board_menu", () -> IMenuTypeExtension.create(TaskBoardMenu::new));
 
     public static final DeferredRegister<MapCodec<? extends Block>> REGISTRAR = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, "yourmodid");
 
@@ -110,6 +121,9 @@ public class ProjectBoards
 
         // Register the Deferred Register to the mod event bus so block entities get registered
         BLOCK_ENTITY_TYPES.register(modEventBus);
+
+        // Register the menus
+        MENUS.register(modEventBus);
 
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
@@ -168,6 +182,11 @@ public class ProjectBoards
         @SubscribeEvent
         public static void registerBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(TASK_BOARD_BLOCK_ENTITY.get(), TaskBoardRenderer::new);
+        }
+
+        @SubscribeEvent
+        public static void registerScreens(RegisterMenuScreensEvent event) {
+            event.register(TASK_BOARD_MENU.get(), TaskBoardScreen::new);
         }
     }
 }

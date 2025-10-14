@@ -9,12 +9,10 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -117,33 +115,55 @@ public class TaskBoardBlock extends BaseEntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.is(ProjectBoards.TASK_SLIP) && level.getBlockEntity(pos) instanceof TaskBoardBlockEntity tbbe) {
+        // if this block has a block entity associated with it
+        if (level.getBlockEntity(pos) instanceof TaskBoardBlockEntity tbbe) {
+            // if the player used a Task Slip item to interact
+            if (stack.is(ProjectBoards.TASK_SLIP)) {
 
-            // check if the task board already has an item
-            if (!tbbe.inventory.getStackInSlot(0).isEmpty()) {
-                ItemStack taskFromBoard = tbbe.inventory.getStackInSlot(0);
-                // If the previous task has a different name from the default,
-                // try to return it to the player before replacing it.
-                if (!Objects.equals(taskFromBoard.get(DataComponents.CUSTOM_NAME), Component.literal(Config.defaultTaskName))) {
+                // check if the task board already has an item
+                if (!tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                    ItemStack taskFromBoard = tbbe.inventory.getStackInSlot(0);
 
-                    // If the player can't pick up the task slip, don't do anything!
-                    if (stack.getCount() == 1) {
+                    // Check if the previous task has a different name from the default,
+                    // so we can try to return it to the player before replacing it.
+                    if (!Objects.equals(taskFromBoard.get(DataComponents.CUSTOM_NAME), Component.literal(Config.defaultTaskName))) {
+
+                        // Only proceed if the player can pick up the task slip in the same hand!
+                        if (stack.getCount() == 1) {
+                            ItemStack taskFromPlayer = stack.split(1);
+                            player.setItemInHand(hand, taskFromBoard);
+                            tbbe.inventory.setStackInSlot(0, taskFromPlayer);
+                            level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 1f);
+                        }
+
+                    // No need to give the player back an empty slip! Just take theirs and replace the empty one
+                    } else {
                         ItemStack taskFromPlayer = stack.split(1);
-                        player.setItemInHand(hand, taskFromBoard);
                         tbbe.inventory.setStackInSlot(0, taskFromPlayer);
-                        level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 1f);
+                        level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 2f);
                     }
                 } else {
                     ItemStack taskFromPlayer = stack.split(1);
                     tbbe.inventory.setStackInSlot(0, taskFromPlayer);
                     level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 2f);
                 }
+                return ItemInteractionResult.SUCCESS;
+
+            // Task board was opened with a non-task slip item, so we should edit the current task or make
+            // a new one!
             } else {
-                ItemStack taskFromPlayer = stack.split(1);
-                tbbe.inventory.setStackInSlot(0, taskFromPlayer);
-                level.playSound(player, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 2f);
+
+                // check if: there is not a task slip item inside
+                if (tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                    tbbe.createNewTask();
+                }
+
+                // TODO: now open menu
+                if (!level.isClientSide()) {
+                    ((ServerPlayer) player).openMenu(new SimpleMenuProvider(tbbe, tbbe.getDisplayName()), pos);
+                }
+                return ItemInteractionResult.SUCCESS;
             }
-            return ItemInteractionResult.SUCCESS;
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }

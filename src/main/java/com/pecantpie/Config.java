@@ -23,12 +23,12 @@ public class Config
             .comment("Whether to log the dirt block on common setup")
             .define("logDirtBlock", true);
 
-    private static final ModConfigSpec.IntValue MAGIC_NUMBER = BUILDER
-            .comment("A magic number")
-            .defineInRange("magicNumber", 42, 0, Integer.MAX_VALUE);
+    private static final ModConfigSpec.IntValue TASK_NAME_MAX_LEN = BUILDER
+            .comment("The maximum number of characters in the name for a Task")
+            .defineInRange("taskNameMaxLen", 50, 1, 100);
 
     private static final ModConfigSpec.ConfigValue<String> DEFAULT_TASK_NAME = BUILDER
-            .comment("What you want the default task name to be when a new task slip is created?")
+            .comment("What the default task name is when a new task is created. This name is blocked from displaying.")
             .define("defaultTaskName", "New Task");
 
     // a list of strings that are treated as resource locations for items
@@ -39,7 +39,7 @@ public class Config
     static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean logDirtBlock;
-    public static int magicNumber;
+    public static int taskNameMaxLength;
     public static String defaultTaskName;
     public static Set<Item> items;
 
@@ -52,7 +52,7 @@ public class Config
     static void onLoad(final ModConfigEvent event)
     {
         logDirtBlock = LOG_DIRT_BLOCK.get();
-        magicNumber = MAGIC_NUMBER.get();
+        taskNameMaxLength = TASK_NAME_MAX_LEN.get();
         defaultTaskName = DEFAULT_TASK_NAME.get();
 
         // convert the list of strings into a set of items
