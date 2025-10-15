@@ -7,12 +7,14 @@ import com.pecantpie.block.TaskBoardRenderer;
 import com.pecantpie.screen.TaskBoardMenu;
 import com.pecantpie.screen.TaskBoardScreen;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -21,7 +23,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -187,6 +188,20 @@ public class ProjectBoards
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(TASK_BOARD_MENU.get(), TaskBoardScreen::new);
+        }
+    }
+
+    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD)
+    public static class ModEvents {
+
+        @SubscribeEvent
+        public static void register(final RegisterPayloadHandlersEvent event) {
+            final PayloadRegistrar registrar = event.registrar("1");
+            registrar.playToServer(
+                    ProjectBoardData.EditTaskData.TYPE,
+                    ProjectBoardData.EditTaskData.STREAM_CODEC,
+                    ProjectBoardData.EditTaskData.ServerPayloadHandler::handleDataOnMain
+            );
         }
     }
 }

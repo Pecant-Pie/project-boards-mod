@@ -2,23 +2,29 @@ package com.pecantpie.screen;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.pecantpie.ProjectBoardData;
 import com.pecantpie.ProjectBoards;
 import com.pecantpie.block.TaskBoardBlockEntity;
 import com.pecantpie.block.TaskBoardRenderer;
+import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -34,6 +40,8 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
 
     private final TaskBoardBlockEntity tbbe;
 
+    private String currentName = null;
+
     @Nullable
     private TextFieldHelper taskNameHelper;
     private int frame = 0;
@@ -42,6 +50,7 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
     public TaskBoardScreen(TaskBoardMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.tbbe = menu.blockEntity;
+        this.currentName = tbbe.getTaskString();
     }
 
 
@@ -78,11 +87,14 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
         int i = this.getTextColor();
         boolean blink = this.frame / 6 % 2 == 0;
 
-        List<FormattedCharSequence> formattedLines = font.split(FormattedText.of(tbbe.getTaskString()), this.getMaxTextWidth());
-        String[] lines = new String[formattedLines.size()];
-        // convert to lines
-        for (int listI = 0; listI < formattedLines.size(); listI++) {
-            lines[listI] = formattedLines.get(listI).toString();
+        StringSplitter splitter = font.getSplitter();
+
+        String taskNameLeft = currentName;
+        // HARDCODED NUMBER OF LINES FOR TASK EDIT SCREEN
+        String[] lines = {"","","",""};
+        for (int ind = 0; ind < lines.length; ind++) {
+            lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
+            taskNameLeft = taskNameLeft.substring(lines[ind].length());
         }
 
 
@@ -161,7 +173,7 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
             if (Math.min(position, lines[lineIndex].length()) == position) {
                 return lineIndex;
             } else {
-                position -= lines[lineIndex].length();
+                position -= lines[lineIndex].length() + 1; // count the space between words
             }
         }
         return lines.length - 1;
@@ -172,7 +184,7 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
             if (Math.min(position, lines[lineIndex].length()) == position) {
                 return position;
             } else {
-                position -= lines[lineIndex].length();
+                position -= lines[lineIndex].length() + 1; // count the space between words
             }
         }
         return lines[lines.length - 1].length();
@@ -193,6 +205,10 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
         }
     }
 
+    public void removed() {
+        PacketDistributor.sendToServer(new ProjectBoardData.EditTaskData(currentName));
+    }
+
     public boolean charTyped(char codePoint, int modifiers) {
         this.taskNameHelper.charTyped(codePoint);
         return true;
@@ -201,7 +217,7 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
     protected void init() {
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE,
                 (p_251194_) -> this.onDone()).bounds(this.width / 2 - 100, this.height / 4 + 144, 200, 20).build());
-        this.taskNameHelper = new TextFieldHelper(tbbe::getTaskString, tbbe::setTaskName, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), tbbe::isTaskNameValid);
+        this.taskNameHelper = new TextFieldHelper(this::getTaskString, this::setTaskString, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), tbbe::isTaskNameValid);
     }
 
     public void containerTick() {
@@ -210,5 +226,13 @@ public class TaskBoardScreen extends AbstractContainerScreen<TaskBoardMenu> {
 
     private void onDone() {
         this.minecraft.setScreen(null);
+    }
+
+    private String getTaskString() {
+        return currentName;
+    }
+
+    private void setTaskString(String taskName) {
+        currentName = taskName;
     }
 }
