@@ -32,6 +32,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 /// Lots of the code here was inspired / taken from the Minecraft code for AbstractSignEditScreen
@@ -108,7 +109,7 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
             if (lineBreak < 0) {
                 lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
             } else {
-                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
+                lines[ind] = taskNameLeft.substring(0, lineBreak);
             }
             taskNameLeft = taskNameLeft.substring(lines[ind].length());
         }
@@ -245,7 +246,7 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
         this.taskNameHelper = new TextFieldHelper(this::getTaskString, this::setTaskString, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), tbbe::isTaskNameValid);
     }
 
-    public void containerTick() {
+    public void tick() {
         ++this.frame;
     }
 
