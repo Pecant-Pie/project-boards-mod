@@ -13,7 +13,7 @@ When you break a Task Board, the Task Slip inside will disappear. This is intent
 
 ## TODO for v0.1
 - [ ] Add recipe for Task Boards
-- [ ] UI for editing a Task by clicking on the task board with an empty hand
+- [x] UI for editing a Task by clicking on the task board with an empty hand
 - [ ] UI for editing a Task by using a Task Slip in the air
 - [x] Text wrapping on Task Boards
 - [ ] Buttons to start, finish, or restart a Task on the front of a Task Board
