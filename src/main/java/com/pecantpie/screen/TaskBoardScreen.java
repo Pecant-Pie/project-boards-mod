@@ -27,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Vector3f;
 
@@ -58,23 +59,28 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
         this.currentName = tbbe.getTaskString();
     }
 
+    protected void offsetTask(GuiGraphics guiGraphics) {
+        guiGraphics.pose().translate((float)this.width / 2.0F, 80.0F, 50.0F);
+    }
+
 
     protected void renderBg(GuiGraphics guiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, GUI_TEXTURE);
 
-        int x = (width - bgWidth) / 2;
-        int y = (height - bgHeight) / 4;
+//        int x = (width - bgWidth) / 2;
+//        int y = (height - bgHeight) / 4;
 
-        guiGraphics.blit(GUI_TEXTURE, x, y, 0, 0, 160, 160);
+        guiGraphics.blit(GUI_TEXTURE, -80, -40, 0, 0, 160, 160);
     }
 
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        offsetTask(guiGraphics);
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
         Lighting.setupForFlatItems();
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 40, 16777215);
+        guiGraphics.drawCenteredString(this.font, this.title, 0, -60, 16777215);
         this.renderTask(guiGraphics);
         Lighting.setupFor3DItems();
     }
@@ -86,106 +92,76 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
     }
 
     private void renderTaskText(GuiGraphics guiGraphics) {
-        guiGraphics.pose().translate(0.0F, 0.0F, 4.0F);
+        guiGraphics.pose().translate(0.0F, 60.0F, 4.0F);
         float textScale = getTaskTextScale();
         guiGraphics.pose().scale(textScale, textScale, textScale);
         int textColor = this.getTextColor();
         boolean blink = this.frame / 6 % 2 == 0;
 
-//        StringSplitter splitter = font.getSplitter();
-//
-//        String taskNameLeft = currentName;
-//        // HARDCODED NUMBER OF LINES FOR TASK EDIT SCREEN
-//        String[] lines = {"","","",""};
-//        for (int ind = 0; ind < lines.length; ind++) {
-//            int lineBreak = splitter.findLineBreak(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
-//            if (lineBreak < 0) {
-//                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
-//            } else {
-//                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
-//            }
-//            taskNameLeft = taskNameLeft.substring(lines[ind].length());
-//        }
+        StringSplitter splitter = font.getSplitter();
 
-        int signLeftX = (int) (this.width * 0.4f  / textScale);
-        int signTopY = (int ) (this.height * 0.3f / textScale);
-        int lineHeight = this.getTextLineHeight();
+        String taskNameLeft = currentName;
+        // HARDCODED NUMBER OF LINES FOR TASK EDIT SCREEN
+        String[] lines = {"","","",""};
+        for (int ind = 0; ind < lines.length; ind++) {
+            int lineBreak = splitter.findLineBreak(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
+            if (lineBreak < 0) {
+                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
+            } else {
+                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
+            }
+            taskNameLeft = taskNameLeft.substring(lines[ind].length());
+        }
 
-        guiGraphics.drawWordWrap(font, FormattedText.of(currentName, Style.EMPTY), signLeftX, signTopY, getMaxTextWidth(), textColor);
-//        int truePosition = this.taskNameHelper.getCursorPos();
-//        int j = this.getPosInLine(truePosition, lines);
-//        int trueSelectionPosition = this.taskNameHelper.getSelectionPos();
-//        int k = this.getPosInLine(trueSelectionPosition, lines);
-//        int line = this.getLineFromPos(truePosition, lines);
-//        int l = 4 * this.getTextLineHeight() / 2;
-//        int i1 = line * this.getTextLineHeight() - l;
-//
-//        for(int j1 = 0; j1 < lines.length; ++j1) {
-//            String s = lines[j1];
-//            if (s != null) {
-//                if (this.font.isBidirectional()) {
-//                    s = this.font.bidirectionalShaping(s);
-//                }
-//
-//                int k1 = -this.font.width(s) / 2;
-//                guiGraphics.drawString(this.font, s, 60 - k1, j1 * this.getTextLineHeight() - l, textColor, false);
-//                if (j1 == line && j >= 0 && blink) {
-//                    int l1 = this.font.width(s.substring(0, Math.max(Math.min(j, s.length()), 0)));
-//                    int i2 = l1 - this.font.width(s) / 2;
-//                    if (j >= s.length()) {
-//                        guiGraphics.drawString(this.font, "_", i2, i1, textColor, false);
-//                    }
-//                }
-//            }
-//        }
 
-//        int truePosition = this.taskNameHelper.getCursorPos();
-//        int j = this.getPosInLine(truePosition, lines);
-//        int trueSelectionPosition = this.taskNameHelper.getSelectionPos();
-//        int k = this.getPosInLine(trueSelectionPosition, lines);
-//        int line = this.getLineFromPos(truePosition, lines);
-//        int l = 4 * this.getTextLineHeight() / 2;
-//        int i1 = line * this.getTextLineHeight() - l;
-//
-//        for(int j1 = 0; j1 < lines.length; ++j1) {
-//            String s = lines[j1];
-//            if (s != null) {
-//                if (this.font.isBidirectional()) {
-//                    s = this.font.bidirectionalShaping(s);
-//                }
-//
-//                int k1 = -this.font.width(s) / 2;
-//                guiGraphics.drawString(this.font, s, k1, j1 * this.getTextLineHeight() - l, i, false);
-//                if (j1 == line && j >= 0 && blink) {
-//                    int l1 = this.font.width(s.substring(0, Math.max(Math.min(j, s.length()), 0)));
-//                    int i2 = l1 - this.font.width(s) / 2;
-//                    if (j >= s.length()) {
-//                        guiGraphics.drawString(this.font, "_", i2, i1, i, false);
-//                    }
-//                }
-//            }
-//        }
-//
-//        for(int k3 = 0; k3 < lines.length; ++k3) {
-//            String s1 = lines[k3];
-//            if (s1 != null && k3 == line && j >= 0) {
-//                int l3 = this.font.width(s1.substring(0, Math.max(Math.min(j, s1.length()), 0)));
-//                int i4 = l3 - this.font.width(s1) / 2;
-//                if (blink && j < s1.length()) {
-//                    guiGraphics.fill(i4, i1 - 1, i4 + 1, i1 + this.getTextLineHeight(), -16777216 | i);
-//                }
-//
-//                if (k != j) {
-//                    int j4 = Math.min(j, k);
-//                    int j2 = Math.max(j, k);
-//                    int k2 = this.font.width(s1.substring(0, j4)) - this.font.width(s1) / 2;
-//                    int l2 = this.font.width(s1.substring(0, j2)) - this.font.width(s1) / 2;
-//                    int i3 = Math.min(k2, l2);
-//                    int j3 = Math.max(k2, l2);
-//                    guiGraphics.fill(RenderType.guiTextHighlight(), i3, i1, j3, i1 + this.getTextLineHeight(), -16776961);
-//                }
-//            }
-//        }
+        int truePosition = this.taskNameHelper.getCursorPos();
+        int j = this.getPosInLine(truePosition, lines);
+        int trueSelectionPosition = this.taskNameHelper.getSelectionPos();
+        int k = this.getPosInLine(trueSelectionPosition, lines);
+        int line = this.getLineFromPos(truePosition, lines);
+        int l = 4 * this.getTextLineHeight() / 2;
+        int i1 = line * this.getTextLineHeight() - l;
+
+
+        for(int j1 = 0; j1 < lines.length; ++j1) {
+            String s = lines[j1];
+            if (s != null) {
+                if (this.font.isBidirectional()) {
+                    s = this.font.bidirectionalShaping(s);
+                }
+
+                int k1 = -this.font.width(s) / 2;
+                guiGraphics.drawString(this.font, s, k1, j1 * this.getTextLineHeight() - l, textColor, false);
+                if (j1 == line && j >= 0 && blink) {
+                    int l1 = this.font.width(s.substring(0, Math.max(Math.min(j, s.length()), 0)));
+                    int i2 = l1 - this.font.width(s) / 2;
+                    if (j >= s.length()) {
+                        guiGraphics.drawString(this.font, "_", i2, i1, textColor, false);
+                    }
+                }
+            }
+        }
+
+        for(int k3 = 0; k3 < lines.length; ++k3) {
+            String s1 = lines[k3];
+            if (s1 != null && k3 == line && j >= 0) {
+                int l3 = this.font.width(s1.substring(0, Math.max(Math.min(j, s1.length()), 0)));
+                int i4 = l3 - this.font.width(s1) / 2;
+                if (blink && j < s1.length()) {
+                    guiGraphics.fill(i4, i1 - 1, i4 + 1, i1 + this.getTextLineHeight(), -16777216 | textColor);
+                }
+
+                if (k != j) {
+                    int j4 = Math.min(j, k);
+                    int j2 = Math.max(j, k);
+                    int k2 = this.font.width(s1.substring(0, j4)) - this.font.width(s1) / 2;
+                    int l2 = this.font.width(s1.substring(0, j2)) - this.font.width(s1) / 2;
+                    int i3 = Math.min(k2, l2);
+                    int j3 = Math.max(k2, l2);
+                    guiGraphics.fill(RenderType.guiTextHighlight(), i3, i1, j3, i1 + this.getTextLineHeight(), -16776961);
+                }
+            }
+        }
 
     }
 
@@ -214,7 +190,9 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
             if (Math.min(position, lines[lineIndex].length()) == position) {
                 return lineIndex;
             } else {
-                position -= lines[lineIndex].length() + 1; // count the space between words
+                position -= lines[lineIndex].length() +
+                        // count an extra character if the line ends in a space
+                        (endsInWhiteSpace(lines[lineIndex]) ? 1 : 0);
             }
         }
         return lines.length - 1;
@@ -225,10 +203,16 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
             if (Math.min(position, lines[lineIndex].length()) == position) {
                 return position;
             } else {
-                position -= lines[lineIndex].length() + 1; // count the space between words
+                position -= lines[lineIndex].length() +
+                        // count an extra character if the line ends in a space
+                        (endsInWhiteSpace(lines[lineIndex]) ? 1 : 0);
             }
         }
         return lines[lines.length - 1].length();
+    }
+
+    protected boolean endsInWhiteSpace(String line) {
+        return line.endsWith(" ");
     }
 
 
