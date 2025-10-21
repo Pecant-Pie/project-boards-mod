@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.pecantpie.block.TaskBoardBlock;
 import com.pecantpie.block.TaskBoardBlockEntity;
 import com.pecantpie.block.TaskBoardRenderer;
+import com.pecantpie.item.TaskBoardItem;
 import com.pecantpie.screen.TaskBoardMenu;
 import com.pecantpie.screen.TaskBoardScreen;
 import net.minecraft.world.inventory.MenuType;
@@ -80,7 +81,7 @@ public class ProjectBoards
     public static final DeferredBlock<TaskBoardBlock> TASK_BOARD = BLOCKS.registerBlock("task_board",
             (props) -> new TaskBoardBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).sound(SoundType.WOOD)));
     // Creates a new BlockItem with the id "projectboards:task_board", combining the namespace and path
-    public static final DeferredItem<BlockItem> TASK_BOARD_ITEM = ITEMS.register("task_board", () -> new BlockItem(TASK_BOARD.get(), new Item.Properties()));
+    public static final DeferredItem<TaskBoardItem> TASK_BOARD_ITEM = ITEMS.register("task_board", () -> new TaskBoardItem(TASK_BOARD.get(), new Item.Properties()));
 
 
     // Task Board Menu registration!!

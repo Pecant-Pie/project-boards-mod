@@ -56,6 +56,11 @@ public class TaskBoardBlock extends BaseEntityBlock {
             stack.set(DataComponents.CUSTOM_NAME, Component.literal(Config.defaultTaskName));
             tbbe.inventory.insertItem(0, stack, false);
         }
+
+//        // open task editing menu for the player
+//        if (!level.isClientSide()) {
+//            ((ServerPlayer) player).openMenu(new SimpleMenuProvider(tbbe, tbbe.getDisplayName()), pos);
+//        }
     }
 
     /* BLOCKSTATE STUFF */
@@ -158,7 +163,7 @@ public class TaskBoardBlock extends BaseEntityBlock {
                     tbbe.createNewTask();
                 }
 
-                // TODO: now open menu
+
                 if (!level.isClientSide()) {
                     ((ServerPlayer) player).openMenu(new SimpleMenuProvider(tbbe, tbbe.getDisplayName()), pos);
                 }
