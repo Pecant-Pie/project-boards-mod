@@ -63,9 +63,11 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         // check if task board has a task
         if (!inventory.getStackInSlot(TASK_SLOT).isEmpty()) {
             ItemStack item = inventory.getStackInSlot(TASK_SLOT);
+            Component name = item.get(DataComponents.CUSTOM_NAME);
+            name = name != null ? name : Component.empty();
             // check if task has a non-default name.
-            if (!Objects.equals(item.get(DataComponents.CUSTOM_NAME), Component.literal(Config.defaultTaskName))) {
-                return item.getDisplayName().toFlatList().get(1).plainCopy().setStyle(Style.EMPTY);
+            if (!Objects.equals(name, Component.literal(Config.defaultTaskName))) {
+                return Component.literal(name.getString());
             }
         }
         return Component.empty();
