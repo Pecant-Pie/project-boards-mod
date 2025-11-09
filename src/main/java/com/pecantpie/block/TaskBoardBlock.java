@@ -158,7 +158,6 @@ public class TaskBoardBlock extends BaseEntityBlock {
             // Task board was opened with a non-task slip item
             // Also check if the click was on the owner section and there is a
             } else if (isClickOnOwner(hitResult) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
-                // TODO: set task's owner data property here!
                 tbbe.setTaskOwner(player);
                 level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
                 return ItemInteractionResult.SUCCESS;
