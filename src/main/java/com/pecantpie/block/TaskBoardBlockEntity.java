@@ -24,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -130,6 +131,18 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         if (!task.isEmpty()) {
             task.set(ModDataComponents.OWNER_NAME, player.getName().tryCollapseToString());
             task.set(ModDataComponents.OWNER_UUID, player.getStringUUID());
+        }
+    }
+
+    @NotNull
+    public String getTaskOwnerName() {
+        ItemStack task = getTaskItem();
+        if (!task.isEmpty()) {
+            String name = task.get(ModDataComponents.OWNER_NAME);
+            return Objects.requireNonNullElse(name, "");
+        }
+        else {
+            return "";
         }
     }
 

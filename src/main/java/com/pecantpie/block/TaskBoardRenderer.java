@@ -2,37 +2,30 @@ package com.pecantpie.block;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.DisplayRenderer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.StandingSignBlock;
-import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 import static com.pecantpie.block.TaskBoardBlock.FACING;
 
 public class TaskBoardRenderer implements BlockEntityRenderer<TaskBoardBlockEntity> {
     private static final int TEXT_COLOR = DyeColor.BLACK.getTextColor();
     private static final int LINE_HEIGHT = 10;
-    private static final int MAX_WIDTH = 83;
-    private static final int MAX_LINES = 4;
+    private static final int MAX_TASK_WIDTH = 83;
+    private static final int MAX_TASK_LINES = 4;
     private static final float TEXT_SCALE = 0.012f;
+    private static final Vec2 OWNER_OFFSET = new Vec2(0, -30f);
+    private static final int MAX_OWNER_WIDTH = 60;
 
     private final Font font;
 
@@ -48,8 +41,10 @@ public class TaskBoardRenderer implements BlockEntityRenderer<TaskBoardBlockEnti
         // render Task text. This should fit nicely as long as the task's name is 52 or less characters.
         // The default item name limit in the anvil is 50, so we should stick to that.
         poseStack.scale(TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
-        renderText(taskBoardBlockEntity.getTaskName(), poseStack, multiBufferSource, pPackedLight, null, MAX_WIDTH, MAX_LINES);
+        renderText(taskBoardBlockEntity.getTaskName(), poseStack, multiBufferSource, pPackedLight, null, MAX_TASK_WIDTH, MAX_TASK_LINES);
 
+        // render Task owner.
+        renderText(Component.literal(taskBoardBlockEntity.getTaskOwnerName()), poseStack, multiBufferSource, pPackedLight, OWNER_OFFSET, MAX_OWNER_WIDTH, 1);
         poseStack.popPose();
     }
 
