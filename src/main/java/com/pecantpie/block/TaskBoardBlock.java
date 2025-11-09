@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -154,8 +155,15 @@ public class TaskBoardBlock extends BaseEntityBlock {
                 }
                 return ItemInteractionResult.SUCCESS;
 
-            // Task board was opened with a non-task slip item, so we should edit the current task or make
-            // a new one!
+            // Task board was opened with a non-task slip item
+            // Also check if the click was on the owner section and there is a
+            } else if (isClickOnOwner(hitResult) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                // TODO: set task's owner data property here!
+                tbbe.setTaskOwner(player);
+                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
+                return ItemInteractionResult.SUCCESS;
+
+            // click was on the task part of the block, so we should edit the current task or make a new one!
             } else {
 
                 // check if: there is not a task slip item inside
@@ -171,6 +179,17 @@ public class TaskBoardBlock extends BaseEntityBlock {
             }
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+    }
+
+    private boolean isClickOnOwner(BlockHitResult hitResult) {
+        BlockPos hitBlock = hitResult.getBlockPos();
+        Vec3 hitLocation = hitResult.getLocation();
+        return hitLocation.y() > (hitBlock.getY() + (13f / 16f));
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        return super.useWithoutItem(state, level, pos, player, hitResult);
     }
 
     static {

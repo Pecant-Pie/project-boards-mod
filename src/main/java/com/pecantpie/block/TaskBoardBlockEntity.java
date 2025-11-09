@@ -2,6 +2,7 @@ package com.pecantpie.block;
 
 import com.pecantpie.Config;
 import com.pecantpie.ProjectBoards;
+import com.pecantpie.component.ModDataComponents;
 import com.pecantpie.screen.TaskBoardMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -59,10 +60,15 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         super(ProjectBoards.TASK_BOARD_BLOCK_ENTITY.get(), pos, blockState);
     }
 
+
+    public ItemStack getTaskItem() {
+        return inventory.getStackInSlot(TASK_SLOT);
+    }
+
     public Component getTaskName() {
         // check if task board has a task
-        if (!inventory.getStackInSlot(TASK_SLOT).isEmpty()) {
-            ItemStack item = inventory.getStackInSlot(TASK_SLOT);
+        ItemStack item = getTaskItem();
+        if (!item.isEmpty()) {
             Component name = item.get(DataComponents.CUSTOM_NAME);
             name = name != null ? name : Component.empty();
             // check if task has a non-default name.
@@ -112,11 +118,19 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
 
 
     public boolean hasTask() {
-        return !inventory.getStackInSlot(TASK_SLOT).isEmpty();
+        return !getTaskItem().isEmpty();
     }
 
     public boolean isTaskNameValid(String name) {
         return name.length() < taskNameMaxLength;
+    }
+
+    public void setTaskOwner(Player player) {
+        ItemStack task = getTaskItem();
+        if (!task.isEmpty()) {
+            task.set(ModDataComponents.OWNER_NAME, player.getName().tryCollapseToString());
+            task.set(ModDataComponents.OWNER_UUID, player.getStringUUID());
+        }
     }
 
     private void markUpdated() {
@@ -129,7 +143,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
 // ******************
 
     protected void forceSetTaskName(String name) {
-        ItemStack item = inventory.getStackInSlot(TASK_SLOT);
+        ItemStack item = getTaskItem();
         item.set(DataComponents.CUSTOM_NAME, Component.literal(name));
     }
 

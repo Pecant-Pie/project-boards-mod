@@ -4,7 +4,9 @@ import com.mojang.serialization.MapCodec;
 import com.pecantpie.block.TaskBoardBlock;
 import com.pecantpie.block.TaskBoardBlockEntity;
 import com.pecantpie.block.TaskBoardRenderer;
+import com.pecantpie.component.ModDataComponents;
 import com.pecantpie.item.TaskBoardItem;
+import com.pecantpie.item.TaskSlipItem;
 import com.pecantpie.screen.TaskBoardMenu;
 import com.pecantpie.screen.TaskBoardScreen;
 import net.minecraft.world.inventory.MenuType;
@@ -12,9 +14,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 
@@ -24,7 +26,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -41,7 +42,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -58,7 +58,7 @@ public class ProjectBoards
     // Define mod id in a common place for everything to reference
     public static final String MODID = "projectboards";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "projectboards" namespace
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
 
@@ -75,7 +75,7 @@ public class ProjectBoards
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
     // Task Slip item
-    public static final DeferredItem<Item> TASK_SLIP = ITEMS.registerSimpleItem("task_slip");
+    public static final DeferredItem<TaskSlipItem> TASK_SLIP = ITEMS.registerItem("task_slip", TaskSlipItem::new);
 
     // Creates a new Block with the id "projectboards:task_board", combining the namespace and path
     public static final DeferredBlock<TaskBoardBlock> TASK_BOARD = BLOCKS.registerBlock("task_board",
@@ -87,15 +87,17 @@ public class ProjectBoards
     // Task Board Menu registration!!
     public static final DeferredHolder<MenuType<?>, MenuType<TaskBoardMenu>> TASK_BOARD_MENU = MENUS.register("task_board_menu", () -> IMenuTypeExtension.create(TaskBoardMenu::new));
 
-    public static final DeferredRegister<MapCodec<? extends Block>> REGISTRAR = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, "yourmodid");
+    public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_TYPE, MODID);
 
-    public static final Supplier<MapCodec<TaskBoardBlock>> SIMPLE_CODEC = REGISTRAR.register(
+    public static final Supplier<MapCodec<TaskBoardBlock>> SIMPLE_CODEC = BLOCK_TYPES.register(
             "simple",
             () -> BlockBehaviour.simpleCodec(TaskBoardBlock::new)
     );
 
     public static final Supplier<BlockEntityType<TaskBoardBlockEntity>> TASK_BOARD_BLOCK_ENTITY =
             BLOCK_ENTITY_TYPES.register("task_board_block_entity", () -> BlockEntityType.Builder.of(TaskBoardBlockEntity::new, TASK_BOARD.get()).build(null));
+
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
 
 
@@ -129,6 +131,8 @@ public class ProjectBoards
 
         // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
+
+        ModDataComponents.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ProjectBoards) to respond directly to events.
