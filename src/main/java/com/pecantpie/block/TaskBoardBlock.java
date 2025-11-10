@@ -156,10 +156,23 @@ public class TaskBoardBlock extends BaseEntityBlock {
                 return ItemInteractionResult.SUCCESS;
 
             // Task board was opened with a non-task slip item
-            // Also check if the click was on the owner section and there is a
+
+            // Also check if the click was on the owner section and there is a task inside
             } else if (isClickOnOwner(hitResult) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
                 tbbe.setTaskOwner(player);
                 level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
+                return ItemInteractionResult.SUCCESS;
+
+            // click was on the status increment part of the block
+            } else if (isClickOnStatusIncrement(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                tbbe.incrementTaskStatus();
+                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
+                return ItemInteractionResult.SUCCESS;
+
+            // click was on the status decrement part of the block
+            } else if (isClickOnStatusDecrement(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                tbbe.decrementTaskStatus();
+                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
                 return ItemInteractionResult.SUCCESS;
 
             // click was on the task part of the block, so we should edit the current task or make a new one!
@@ -184,6 +197,44 @@ public class TaskBoardBlock extends BaseEntityBlock {
         BlockPos hitBlock = hitResult.getBlockPos();
         Vec3 hitLocation = hitResult.getLocation();
         return hitLocation.y() > (hitBlock.getY() + (13f / 16f));
+    }
+
+    private boolean isClickOnStatusIncrement(BlockHitResult hitResult, BlockState state) {
+        if (hitResult.getDirection() == state.getValue(FACING)) {
+            BlockPos hitBlock = hitResult.getBlockPos();
+            Vec3 hitLocation = hitResult.getLocation();
+
+            boolean isRightSide = switch (hitResult.getDirection()) {
+                case NORTH -> hitLocation.x() < (hitBlock.getX() + 0.5f);
+                case WEST -> hitLocation.z() > (hitBlock.getZ() + 0.5f);
+                case SOUTH -> hitLocation.x() > (hitBlock.getX() + 0.5f);
+                case EAST -> hitLocation.z() < (hitBlock.getZ() + 0.5f);
+                default -> false;
+            };
+
+            return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isRightSide;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isClickOnStatusDecrement(BlockHitResult hitResult, BlockState state) {
+        if (hitResult.getDirection() == state.getValue(FACING)) {
+            BlockPos hitBlock = hitResult.getBlockPos();
+            Vec3 hitLocation = hitResult.getLocation();
+
+            boolean isLeftSide = switch (hitResult.getDirection()) {
+                case NORTH -> hitLocation.x() > (hitBlock.getX() + 0.5f);
+                case WEST -> hitLocation.z() < (hitBlock.getZ() + 0.5f);
+                case SOUTH -> hitLocation.x() < (hitBlock.getX() + 0.5f);
+                case EAST -> hitLocation.z() > (hitBlock.getZ() + 0.5f);
+                default -> false;
+            };
+
+            return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isLeftSide;
+        } else {
+            return false;
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.pecantpie.component;
 
+import com.mojang.serialization.Codec;
 import com.pecantpie.ProjectBoards;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +19,7 @@ public class ModDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> OWNER_UUID = register("owner_uuid", builder -> builder.persistent(ExtraCodecs.NON_EMPTY_STRING));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> OWNER_NAME = register("owner_name", builder -> builder.persistent(ExtraCodecs.PLAYER_NAME));
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Short>> STATUS_CODE = register("status_code", builder -> builder.persistent(Codec.SHORT));
 
     private static <T>DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(String name, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
         return DATA_COMPONENT_TYPES.register(name, () -> builderOperator.apply(DataComponentType.builder()).build());

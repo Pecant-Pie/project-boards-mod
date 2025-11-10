@@ -25,7 +25,9 @@ public class TaskBoardRenderer implements BlockEntityRenderer<TaskBoardBlockEnti
     private static final int MAX_TASK_LINES = 4;
     private static final float TEXT_SCALE = 0.012f;
     private static final Vec2 OWNER_OFFSET = new Vec2(0, -30f);
-    private static final int MAX_OWNER_WIDTH = 60;
+    private static final int MAX_OWNER_WIDTH = 70;
+    private static final Vec2 STATUS_OFFSET = new Vec2(0, 32f);
+    private static final int MAX_STATUS_WIDTH = 60;
 
     private final Font font;
 
@@ -45,6 +47,9 @@ public class TaskBoardRenderer implements BlockEntityRenderer<TaskBoardBlockEnti
 
         // render Task owner.
         renderText(Component.literal(taskBoardBlockEntity.getTaskOwnerName()), poseStack, multiBufferSource, pPackedLight, OWNER_OFFSET, MAX_OWNER_WIDTH, 1);
+
+        // render Task status
+        renderText(taskBoardBlockEntity.getTaskStatusComponent(), poseStack, multiBufferSource, pPackedLight, STATUS_OFFSET, MAX_STATUS_WIDTH, 1);
         poseStack.popPose();
     }
 

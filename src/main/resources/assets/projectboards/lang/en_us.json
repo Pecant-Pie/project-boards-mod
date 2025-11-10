@@ -2,5 +2,9 @@
   "itemGroup.projectboards": "Project Boards Tab",
   "block.projectboards.task_board": "Task Board",
   "item.projectboards.task_slip": "Task Slip",
-  "gui.projectboards.edit_task_screen": "Edit Task"
+  "gui.projectboards.edit_task_screen": "Edit Task",
+  "item.projectboards.task_slip.planned": "Planned",
+  "item.projectboards.task_slip.started": "Started",
+  "item.projectboards.task_slip.completed": "Completed",
+  "item.projectboards.task_slip.blocked": "Blocked"
 }

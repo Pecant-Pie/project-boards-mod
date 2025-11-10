@@ -1,8 +1,10 @@
 package com.pecantpie.block;
 
 import com.pecantpie.Config;
+import com.pecantpie.ProjectBoardData;
 import com.pecantpie.ProjectBoards;
 import com.pecantpie.component.ModDataComponents;
+import com.pecantpie.item.TaskSlipItem;
 import com.pecantpie.screen.TaskBoardMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -32,6 +34,9 @@ import java.util.Objects;
 import static com.pecantpie.Config.defaultTaskName;
 import static com.pecantpie.Config.taskNameMaxLength;
 import static com.pecantpie.ProjectBoards.MODID;
+import static com.pecantpie.ProjectBoardData.TaskStatus;
+import static com.pecantpie.item.TaskSlipItem.getRawStatus;
+import static com.pecantpie.item.TaskSlipItem.resetTaskStatus;
 
 public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
     private static final int TASK_SLOT = 0;
@@ -146,6 +151,25 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    public void initTaskStatus() {
+        ItemStack item = getTaskItem();
+        if (!item.isEmpty() && !item.has(ModDataComponents.STATUS_CODE)) {
+            TaskSlipItem.resetTaskStatus(item);
+        }
+    }
+
+    public void incrementTaskStatus() {
+        TaskSlipItem.incrementTaskStatus(getTaskItem());
+    }
+
+    public void decrementTaskStatus() {
+        TaskSlipItem.decrementTaskStatus(getTaskItem());
+    }
+
+    public Component getTaskStatusComponent() {
+        return TaskSlipItem.getTaskStatusComponent(getTaskItem());
+    }
+
     private void markUpdated() {
         this.setChanged();
         this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
@@ -162,6 +186,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
 
     protected void forceCreateNewTask() {
         ItemStack newTask = new ItemStack(ProjectBoards.TASK_SLIP.get());
+        resetTaskStatus(newTask);
         inventory.setStackInSlot(TASK_SLOT, newTask);
     }
 
