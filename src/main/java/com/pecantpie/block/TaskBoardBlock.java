@@ -158,22 +158,28 @@ public class TaskBoardBlock extends BaseEntityBlock {
             // Task board was opened with a non-task slip item
 
             // Also check if the click was on the owner section and there is a task inside
-            } else if (isClickOnOwner(hitResult) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
-                tbbe.setTaskOwner(player);
-                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
-                return ItemInteractionResult.SUCCESS;
+            } else if (isClickOnOwner(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                if (player.isCrouching()) {
+                    tbbe.resetTaskOwner();
+                    level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
+                    return ItemInteractionResult.SUCCESS;
+                } else {
+                    tbbe.setTaskOwner(player);
+                    level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
+                    return ItemInteractionResult.SUCCESS;
+                }
 
             // click was on the status increment part of the block
-            } else if (isClickOnStatusIncrement(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
-                tbbe.incrementTaskStatus();
-                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
-                return ItemInteractionResult.SUCCESS;
-
-            // click was on the status decrement part of the block
-            } else if (isClickOnStatusDecrement(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
-                tbbe.decrementTaskStatus();
-                level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
-                return ItemInteractionResult.SUCCESS;
+            } else if (isClickOnStatus(hitResult, state) && !tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                if (player.isCrouching()) {
+                    tbbe.decrementTaskStatus();
+                    level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
+                    return ItemInteractionResult.SUCCESS;
+                } else {
+                    tbbe.incrementTaskStatus();
+                    level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 2f);
+                    return ItemInteractionResult.SUCCESS;
+                }
 
             // click was on the task part of the block, so we should edit the current task or make a new one!
             } else {
@@ -193,48 +199,29 @@ public class TaskBoardBlock extends BaseEntityBlock {
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
-    private boolean isClickOnOwner(BlockHitResult hitResult) {
+    private boolean isClickOnOwner(BlockHitResult hitResult, BlockState state) {
         BlockPos hitBlock = hitResult.getBlockPos();
         Vec3 hitLocation = hitResult.getLocation();
-        return hitLocation.y() > (hitBlock.getY() + (13f / 16f));
+        return hitLocation.y() > (hitBlock.getY() + (13f / 16f))
+                && hitResult.getDirection() == state.getValue(FACING);
     }
 
-    private boolean isClickOnStatusIncrement(BlockHitResult hitResult, BlockState state) {
-        if (hitResult.getDirection() == state.getValue(FACING)) {
-            BlockPos hitBlock = hitResult.getBlockPos();
-            Vec3 hitLocation = hitResult.getLocation();
+    private boolean isClickOnStatus(BlockHitResult hitResult, BlockState state) {
+        BlockPos hitBlock = hitResult.getBlockPos();
+        Vec3 hitLocation = hitResult.getLocation();
 
-            boolean isRightSide = switch (hitResult.getDirection()) {
-                case NORTH -> hitLocation.x() < (hitBlock.getX() + 0.5f);
-                case WEST -> hitLocation.z() > (hitBlock.getZ() + 0.5f);
-                case SOUTH -> hitLocation.x() > (hitBlock.getX() + 0.5f);
-                case EAST -> hitLocation.z() < (hitBlock.getZ() + 0.5f);
-                default -> false;
-            };
-
-            return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isRightSide;
-        } else {
-            return false;
-        }
+        return hitLocation.y() < (hitBlock.getY() + (3f / 16f))
+                && hitResult.getDirection() == state.getValue(FACING);
     }
 
-    private boolean isClickOnStatusDecrement(BlockHitResult hitResult, BlockState state) {
-        if (hitResult.getDirection() == state.getValue(FACING)) {
-            BlockPos hitBlock = hitResult.getBlockPos();
-            Vec3 hitLocation = hitResult.getLocation();
+    private boolean isClickOnStatusDecrement(BlockHitResult hitResult, BlockState state, Player player) {
+        BlockPos hitBlock = hitResult.getBlockPos();
+        Vec3 hitLocation = hitResult.getLocation();
 
-            boolean isLeftSide = switch (hitResult.getDirection()) {
-                case NORTH -> hitLocation.x() > (hitBlock.getX() + 0.5f);
-                case WEST -> hitLocation.z() < (hitBlock.getZ() + 0.5f);
-                case SOUTH -> hitLocation.x() < (hitBlock.getX() + 0.5f);
-                case EAST -> hitLocation.z() > (hitBlock.getZ() + 0.5f);
-                default -> false;
-            };
+        boolean isLeftSide = player.isCrouching();
 
-            return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isLeftSide;
-        } else {
-            return false;
-        }
+        return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isLeftSide
+                && hitResult.getDirection() == state.getValue(FACING);
     }
 
     @Override

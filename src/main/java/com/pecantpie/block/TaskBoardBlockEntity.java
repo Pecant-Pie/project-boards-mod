@@ -131,6 +131,14 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         return name.length() < taskNameMaxLength;
     }
 
+    public void resetTaskOwner() {
+        ItemStack task = getTaskItem();
+        if (!task.isEmpty()) {
+            task.remove(ModDataComponents.OWNER_NAME);
+            task.remove(ModDataComponents.OWNER_UUID);
+        }
+    }
+
     public void setTaskOwner(Player player) {
         ItemStack task = getTaskItem();
         if (!task.isEmpty()) {
