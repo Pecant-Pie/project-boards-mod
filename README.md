@@ -16,7 +16,7 @@ When you break a Task Board, the Task Slip inside will disappear. This is intent
 - [x] UI for editing a Task by clicking on the task board with an empty hand
 - [ ] UI for editing a Task by using a Task Slip in the air
 - [x] Text wrapping on Task Boards
-- [ ] Buttons to start, finish, or restart a Task on the front of a Task Board
-- [ ] Text displaying the status of a task: 'planned', 'started', or 'finished'
-- [ ] Text displaying the 'owner' of a task (either the person who placed it, or the last person to start it or finish it)
+- [x] Ability to change owner & status of a task on a task board
+- [x] Text displaying the status of a task: 'planned', 'started', or 'finished'
+- [x] Text displaying the 'owner' of a task (either the person who placed it, or the last person to start it or finish it)
 - [ ] Item transfer support for Task Boards, so hoppers, droppers, and modded blocks can interact with them
