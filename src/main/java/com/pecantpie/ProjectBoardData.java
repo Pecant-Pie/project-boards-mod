@@ -39,8 +39,12 @@ public class ProjectBoardData {
 
                 if (menu instanceof TaskBoardMenu tbbm) {
                     TaskBoardBlockEntity tbbe = ((TaskBoardMenu) menu).blockEntity;
-                    tbbe.setTaskName(data.name());
-                    tbbe.initTaskStatus(); // only resets status if it had none
+                    if (!data.name().isBlank()) {
+                        tbbe.setTaskName(data.name());
+                        tbbe.initTaskStatus(); // only resets status if it had none
+                    } else {
+                        tbbe.removeTask();
+                    }
                 }
             }
         }

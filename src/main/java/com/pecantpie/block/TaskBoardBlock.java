@@ -185,8 +185,19 @@ public class TaskBoardBlock extends BaseEntityBlock {
             } else {
 
                 // check if: there is not a task slip item inside
-                if (tbbe.inventory.getStackInSlot(0).isEmpty()) {
+                if (tbbe.inventory.getStackInSlot(0).isEmpty() && !player.isCrouching()) {
                     tbbe.createNewTask();
+                // let player take out task if sneak-clicking with an empty hand
+                } else if (player.isCrouching() && player.getMainHandItem().isEmpty()
+                ) {
+                    ItemStack taskFromBoard = tbbe.removeTask();
+                    level.playSound(player, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1f, 1f);
+                    if (!Objects.equals(taskFromBoard.get(DataComponents.CUSTOM_NAME), Component.literal(Config.defaultTaskName))) {
+                        player.setItemInHand(hand, taskFromBoard);
+                        return ItemInteractionResult.SUCCESS;
+                    } else {
+                        return ItemInteractionResult.FAIL;
+                    }
                 }
 
 

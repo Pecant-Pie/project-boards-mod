@@ -137,6 +137,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
             task.remove(ModDataComponents.OWNER_NAME);
             task.remove(ModDataComponents.OWNER_UUID);
         }
+        markUpdated();
     }
 
     public void setTaskOwner(Player player) {
@@ -145,6 +146,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
             task.set(ModDataComponents.OWNER_NAME, player.getName().tryCollapseToString());
             task.set(ModDataComponents.OWNER_UUID, player.getStringUUID());
         }
+        markUpdated();
     }
 
     @NotNull
@@ -164,18 +166,28 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         if (!item.isEmpty() && !item.has(ModDataComponents.STATUS_CODE)) {
             TaskSlipItem.resetTaskStatus(item);
         }
+        markUpdated();
     }
 
     public void incrementTaskStatus() {
         TaskSlipItem.incrementTaskStatus(getTaskItem());
+        markUpdated();
     }
 
     public void decrementTaskStatus() {
         TaskSlipItem.decrementTaskStatus(getTaskItem());
+        markUpdated();
     }
 
     public Component getTaskStatusComponent() {
         return TaskSlipItem.getTaskStatusComponent(getTaskItem());
+    }
+
+    public ItemStack removeTask() {
+        ItemStack item = getTaskItem();
+        inventory.setStackInSlot(TASK_SLOT, ItemStack.EMPTY);
+        markUpdated();
+        return item;
     }
 
     private void markUpdated() {
@@ -196,6 +208,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
         ItemStack newTask = new ItemStack(ProjectBoards.TASK_SLIP.get());
         resetTaskStatus(newTask);
         inventory.setStackInSlot(TASK_SLOT, newTask);
+        resetTaskOwner();
     }
 
 // ***************

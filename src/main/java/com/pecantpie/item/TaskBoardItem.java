@@ -27,7 +27,9 @@ public class TaskBoardItem extends BlockItem {
                 && !flag
                 && player != null
                 && level.getBlockEntity(pos) instanceof TaskBoardBlockEntity blockEntity
-                && level.getBlockState(pos).getBlock() instanceof TaskBoardBlock block) {
+                && level.getBlockState(pos).getBlock() instanceof TaskBoardBlock block
+                && !player.isCrouching()) {
+
             ((ServerPlayer) player).openMenu(new SimpleMenuProvider(blockEntity, blockEntity.getDisplayName()), pos);
         }
 
