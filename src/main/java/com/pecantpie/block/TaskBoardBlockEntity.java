@@ -25,6 +25,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +39,7 @@ import static com.pecantpie.ProjectBoardData.TaskStatus;
 import static com.pecantpie.item.TaskSlipItem.getRawStatus;
 import static com.pecantpie.item.TaskSlipItem.resetTaskStatus;
 
-public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
+public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
     private static final int TASK_SLOT = 0;
 
     public final ItemStackHandler inventory = new ItemStackHandler(1) {
@@ -182,6 +183,11 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider {
     public Component getTaskStatusComponent() {
         return TaskSlipItem.getTaskStatusComponent(getTaskItem());
     }
+
+    public IItemHandler getItemHandler() {
+        return inventory;
+    }
+
 
     public ItemStack removeTask() {
         ItemStack item = getTaskItem();

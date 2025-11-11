@@ -19,4 +19,4 @@ When you break a Task Board, the Task Slip inside will disappear. This is intent
 - [x] Ability to change owner & status of a task on a task board
 - [x] Text displaying the status of a task: 'planned', 'started', or 'finished'
 - [x] Text displaying the 'owner' of a task (either the person who placed it, or the last person to start it or finish it)
-- [ ] Item transfer support for Task Boards, so hoppers, droppers, and modded blocks can interact with them
+- [x] Item transfer support for Task Boards, so hoppers, droppers, and modded blocks can interact with them

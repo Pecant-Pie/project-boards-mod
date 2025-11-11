@@ -9,13 +9,18 @@ import com.pecantpie.item.TaskBoardItem;
 import com.pecantpie.item.TaskSlipItem;
 import com.pecantpie.screen.TaskBoardMenu;
 import com.pecantpie.screen.TaskBoardScreen;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
@@ -97,6 +102,13 @@ public class ProjectBoards
     public static final Supplier<BlockEntityType<TaskBoardBlockEntity>> TASK_BOARD_BLOCK_ENTITY =
             BLOCK_ENTITY_TYPES.register("task_board_block_entity", () -> BlockEntityType.Builder.of(TaskBoardBlockEntity::new, TASK_BOARD.get()).build(null));
 
+    public static final BlockCapability<IItemHandler, Void> TASK_BOARD_ITEM_HANDLER =
+            BlockCapability.createVoid(
+                    // Provide a name to uniquely identify the capability.
+                    ResourceLocation.fromNamespaceAndPath(MODID, "task_board_item_handler"),
+                    // Provide the queried type. Here, we want to look up `IItemHandler` instances.
+                    IItemHandler.class);
+
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
 
@@ -173,6 +185,8 @@ public class ProjectBoards
         LOGGER.info("HELLO from server starting");
     }
 
+
+
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents
@@ -206,6 +220,15 @@ public class ProjectBoards
                     ProjectBoardData.EditTaskData.TYPE,
                     ProjectBoardData.EditTaskData.STREAM_CODEC,
                     ProjectBoardData.EditTaskData.ServerPayloadHandler::handleDataOnMain
+            );
+        }
+
+        @SubscribeEvent  // on the mod event bus
+        public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+            event.registerBlockEntity(
+                    Capabilities.ItemHandler.BLOCK, // capability to register for
+                    TASK_BOARD_BLOCK_ENTITY.get(), // block entity type to register for
+                    (myBlockEntity, side) -> myBlockEntity.getItemHandler()
             );
         }
     }
