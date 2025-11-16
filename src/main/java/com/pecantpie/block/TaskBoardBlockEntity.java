@@ -41,6 +41,7 @@ import static com.pecantpie.item.TaskSlipItem.resetTaskStatus;
 
 public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
     private static final int TASK_SLOT = 0;
+    private boolean isInUse = false;
 
     public final ItemStackHandler inventory = new ItemStackHandler(1) {
         @Override
@@ -60,6 +61,26 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return super.isItemValid(slot, stack) && stack.is(ProjectBoards.TASK_SLIP);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+
+            if (isInUse()) {
+                return stack;
+            } else {
+                return super.insertItem(slot, stack, simulate);
+            }
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+
+            if (isInUse()) {
+                return ItemStack.EMPTY;
+            } else {
+                return super.extractItem(slot, amount, simulate);
+            }
         }
     };
 
@@ -196,6 +217,19 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
         return item;
     }
 
+    public boolean isInUse() {
+        return isInUse;
+    }
+
+    public void markInUse() {
+        isInUse = true;
+    }
+
+    public void markNotInUse() {
+        isInUse = false;
+        this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
+    }
+
     private void markUpdated() {
         this.setChanged();
         this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
@@ -213,7 +247,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
     protected void forceCreateNewTask() {
         ItemStack newTask = new ItemStack(ProjectBoards.TASK_SLIP.get());
         resetTaskStatus(newTask);
-        inventory.setStackInSlot(TASK_SLOT, newTask);
+        inventory.insertItem(TASK_SLOT, newTask, false);
         resetTaskOwner();
     }
 

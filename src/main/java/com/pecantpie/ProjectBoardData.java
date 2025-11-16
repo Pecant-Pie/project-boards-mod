@@ -38,12 +38,15 @@ public class ProjectBoardData {
                 AbstractContainerMenu menu = context.player().containerMenu;
 
                 if (menu instanceof TaskBoardMenu tbbm) {
-                    TaskBoardBlockEntity tbbe = ((TaskBoardMenu) menu).blockEntity;
+                    TaskBoardBlockEntity tbbe = tbbm.blockEntity;
                     if (!data.name().isBlank()) {
                         tbbe.setTaskName(data.name());
                         tbbe.initTaskStatus(); // only resets status if it had none
                     } else {
                         tbbe.removeTask();
+                    }
+                    if (tbbe.isInUse()) {
+                        tbbe.markNotInUse();
                     }
                 }
             }

@@ -26,6 +26,7 @@ public class TaskBoardMenu extends AbstractContainerMenu {
         super(ProjectBoards.TASK_BOARD_MENU.get(), containerId);
         if (blockEntity instanceof TaskBoardBlockEntity tbbe) {
             this.blockEntity = tbbe;
+            tbbe.markInUse();
             this.level = inv.player.level();
         } else {
             throw new UnsupportedOperationException(inv.player.getName().getString() + " tried to open a TaskBoardMenu without a TaskBoardBlockEntity!");
