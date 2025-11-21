@@ -5,35 +5,23 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.pecantpie.ProjectBoardData;
 import com.pecantpie.ProjectBoards;
 import com.pecantpie.block.TaskBoardBlockEntity;
-import com.pecantpie.block.TaskBoardRenderer;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 
 /// Lots of the code here was inspired / taken from the Minecraft code for AbstractSignEditScreen
 
@@ -99,29 +87,17 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
         int textColor = this.getTextColor();
         boolean blink = this.frame / 6 % 2 == 0;
 
-        StringSplitter splitter = font.getSplitter();
 
-        String taskNameLeft = currentName;
-        // HARDCODED NUMBER OF LINES FOR TASK EDIT SCREEN
-        String[] lines = {"","","",""};
-        for (int ind = 0; ind < lines.length; ind++) {
-            int lineBreak = splitter.findLineBreak(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
-            if (lineBreak < 0) {
-                lines[ind] = splitter.plainHeadByWidth(taskNameLeft, getMaxTextWidth(), Style.EMPTY);
-            } else {
-                lines[ind] = taskNameLeft.substring(0, lineBreak);
-            }
-            taskNameLeft = taskNameLeft.substring(lines[ind].length());
-        }
-
+        String[] lines = splitStringUpTo4(currentName);
 
         int truePosition = this.taskNameHelper.getCursorPos();
-        int j = this.getPosInLine(truePosition, lines);
-        int trueSelectionPosition = this.taskNameHelper.getSelectionPos();
-        int k = this.getPosInLine(trueSelectionPosition, lines);
+        int posInLine = this.getPosInLine(truePosition, lines);
+        int trueMarkPosition = this.taskNameHelper.getSelectionPos();
+        int markPosInLine = this.getPosInLine(trueMarkPosition, lines);
+        int markLine = this.getLineFromPos(trueMarkPosition, lines);
         int line = this.getLineFromPos(truePosition, lines);
-        int l = 4 * this.getTextLineHeight() / 2;
-        int i1 = line * this.getTextLineHeight() - l;
+        int yOffset = 4 * this.getTextLineHeight() / 2;
+        int selectedLineY = line * this.getTextLineHeight() - yOffset;
 
 
         for(int j1 = 0; j1 < lines.length; ++j1) {
@@ -132,35 +108,43 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
                 }
 
                 int k1 = -this.font.width(s) / 2;
-                guiGraphics.drawString(this.font, s, k1, j1 * this.getTextLineHeight() - l, textColor, false);
-                if (j1 == line && j >= 0 && blink) {
-                    int l1 = this.font.width(s.substring(0, Math.max(Math.min(j, s.length()), 0)));
+                guiGraphics.drawString(this.font, s, k1, j1 * this.getTextLineHeight() - yOffset, textColor, false);
+                // draw blinking _
+                if (j1 == line && posInLine >= 0 && blink) {
+                    int l1 = this.font.width(s.substring(0, Math.max(Math.min(posInLine, s.length()), 0)));
                     int i2 = l1 - this.font.width(s) / 2;
-                    if (j >= s.length()) {
-                        guiGraphics.drawString(this.font, "_", i2, i1, textColor, false);
+                    if (posInLine >= s.length()) {
+                        guiGraphics.drawString(this.font, "_", i2, selectedLineY, textColor, false);
                     }
                 }
             }
         }
 
-        for(int k3 = 0; k3 < lines.length; ++k3) {
-            String s1 = lines[k3];
-            if (s1 != null && k3 == line && j >= 0) {
-                int l3 = this.font.width(s1.substring(0, Math.max(Math.min(j, s1.length()), 0)));
-                int i4 = l3 - this.font.width(s1) / 2;
-                if (blink && j < s1.length()) {
-                    guiGraphics.fill(i4, i1 - 1, i4 + 1, i1 + this.getTextLineHeight(), -16777216 | textColor);
-                }
+        boolean isMarkFirst = trueMarkPosition < truePosition;
 
-                if (k != j) {
-                    int j4 = Math.min(j, k);
-                    int j2 = Math.max(j, k);
-                    int k2 = this.font.width(s1.substring(0, j4)) - this.font.width(s1) / 2;
-                    int l2 = this.font.width(s1.substring(0, j2)) - this.font.width(s1) / 2;
-                    int i3 = Math.min(k2, l2);
-                    int j3 = Math.max(k2, l2);
-                    guiGraphics.fill(RenderType.guiTextHighlight(), i3, i1, j3, i1 + this.getTextLineHeight(), -16776961);
-                }
+        int topLine = Math.min(markLine, line);
+        int bottomLine = Math.max(markLine, line);
+
+
+        // draw blinking | if cursor is between characters
+        int l3 = this.font.width(lines[line].substring(0, Math.max(Math.min(posInLine, lines[line].length()), 0)));
+        int i4 = l3 - this.font.width(lines[line]) / 2;
+        if (blink && posInLine < lines[line].length()) {
+            guiGraphics.fill(i4, selectedLineY - 1, i4 + 1, selectedLineY + this.getTextLineHeight(), -16777216 | textColor);
+        }
+
+        for(int highlightI = 0; highlightI < lines.length; ++highlightI) {
+            String lineToHighlight = lines[highlightI];
+            if (trueMarkPosition != truePosition && lineToHighlight != null && highlightI >= topLine && highlightI <= bottomLine) {
+
+                int highlightedLineY = highlightI * this.getTextLineHeight() - yOffset;
+                int leftMostEdgePos = highlightI > topLine ? 0 : (isMarkFirst ? markPosInLine : posInLine);
+                int rightMostEdgePos = highlightI < bottomLine ? lineToHighlight.length() : (isMarkFirst ? posInLine : markPosInLine);
+                int leftEdgeOffset = this.font.width(lineToHighlight.substring(0, leftMostEdgePos)) - this.font.width(lineToHighlight) / 2;
+                int rightEdgeOffset = this.font.width(lineToHighlight.substring(0, rightMostEdgePos)) - this.font.width(lineToHighlight) / 2;
+                int i3 = Math.min(leftEdgeOffset, rightEdgeOffset);
+                int j3 = Math.max(leftEdgeOffset, rightEdgeOffset);
+                guiGraphics.fill(RenderType.guiTextHighlight(), leftEdgeOffset, highlightedLineY, rightEdgeOffset, highlightedLineY + this.getTextLineHeight(), -16776961);
             }
         }
 
@@ -204,7 +188,7 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
             if (Math.min(position, lines[lineIndex].length()) == position) {
                 return position;
             } else {
-                position -= lines[lineIndex].length() +
+                position -= lines[lineIndex].stripTrailing().length() +
                         // count an extra character if the line ends in a space
                         (endsInWhiteSpace(lines[lineIndex]) ? 1 : 0);
             }
@@ -223,12 +207,41 @@ public class TaskBoardScreen extends Screen implements MenuAccess<TaskBoardMenu>
 
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode != 264 && keyCode != 257 && keyCode != 335) {
+        if (keyCode != 264 && keyCode != 265 && keyCode != 257 && keyCode != 335) {
             return this.taskNameHelper.keyPressed(keyCode) ? true : super.keyPressed(keyCode, scanCode, modifiers);
-        } else {
-            this.taskNameHelper.setCursorToEnd();
+        } else if (keyCode == 265) { // up arrow key
+            if (modifiers == 1 && taskNameHelper.getCursorPos() == taskNameHelper.getSelectionPos()) {
+                this.taskNameHelper.setSelectionPos(taskNameHelper.getCursorPos());
+            }
+            this.taskNameHelper.setCursorToStart(modifiers == 1);
             return true;
         }
+        else {
+            if (modifiers == 1 && taskNameHelper.getCursorPos() == taskNameHelper.getSelectionPos()) {
+                this.taskNameHelper.setSelectionPos(taskNameHelper.getCursorPos());
+            }
+            this.taskNameHelper.setCursorToEnd(modifiers == 1);
+            return true;
+        }
+    }
+
+    public String[] splitStringUpTo4(String toSplit) {
+        StringSplitter splitter = font.getSplitter();
+
+        String stringLeft = toSplit;
+        // HARDCODED NUMBER OF LINES FOR TASK EDIT SCREEN
+        String[] lines = {"","","",""};
+        for (int ind = 0; ind < lines.length; ind++) {
+            int lineBreak = splitter.findLineBreak(stringLeft, getMaxTextWidth(), Style.EMPTY);
+            // line break will equal 0 if none was found
+            if (lineBreak <= 0) {
+                lines[ind] = splitter.plainHeadByWidth(stringLeft, getMaxTextWidth(), Style.EMPTY);
+            } else {
+                lines[ind] = stringLeft.substring(0, lineBreak);
+            }
+            stringLeft = stringLeft.substring(lines[ind].length());
+        }
+        return lines;
     }
 
     public void removed() {
