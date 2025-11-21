@@ -84,7 +84,7 @@ public class ProjectBoards
 
     // Creates a new Block with the id "projectboards:task_board", combining the namespace and path
     public static final DeferredBlock<TaskBoardBlock> TASK_BOARD = BLOCKS.registerBlock("task_board",
-            (props) -> new TaskBoardBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).sound(SoundType.WOOD)));
+            (props) -> new TaskBoardBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1f)));
     // Creates a new BlockItem with the id "projectboards:task_board", combining the namespace and path
     public static final DeferredItem<TaskBoardItem> TASK_BOARD_ITEM = ITEMS.register("task_board", () -> new TaskBoardItem(TASK_BOARD.get(), new Item.Properties()));
 

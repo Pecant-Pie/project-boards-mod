@@ -122,7 +122,7 @@ public class TaskBoardBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         // if this block has a block entity associated with it
-        if (level.getBlockEntity(pos) instanceof TaskBoardBlockEntity tbbe && !tbbe.isInUse()) {
+        if (level.getBlockEntity(pos) instanceof TaskBoardBlockEntity tbbe && tbbe.canUse(player)) {
             // if the player used a Task Slip item to interact
             if (stack.is(ProjectBoards.TASK_SLIP)) {
 
@@ -186,7 +186,7 @@ public class TaskBoardBlock extends BaseEntityBlock {
 
                 // check if: there is not a task slip item inside
                 if (tbbe.inventory.getStackInSlot(0).isEmpty() && !player.isCrouching()) {
-                    tbbe.createNewTask();
+                    tbbe.createNewTask(player);
                 // let player take out task if sneak-clicking with an empty hand
                 } else if (player.isCrouching() && player.getMainHandItem().isEmpty()
                 ) {

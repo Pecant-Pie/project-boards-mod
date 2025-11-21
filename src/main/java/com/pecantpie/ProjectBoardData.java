@@ -45,9 +45,7 @@ public class ProjectBoardData {
                     } else {
                         tbbe.removeTask();
                     }
-                    if (tbbe.isInUse()) {
-                        tbbe.markNotInUse();
-                    }
+                    tbbe.markNotInUse();
                 }
             }
         }

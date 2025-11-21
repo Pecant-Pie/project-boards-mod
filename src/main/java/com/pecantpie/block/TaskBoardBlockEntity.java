@@ -31,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.pecantpie.Config.defaultTaskName;
 import static com.pecantpie.Config.taskNameMaxLength;
@@ -41,7 +42,7 @@ import static com.pecantpie.item.TaskSlipItem.resetTaskStatus;
 
 public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
     private static final int TASK_SLOT = 0;
-    private boolean isInUse = false;
+    private UUID usingPlayer = null;
 
     public final ItemStackHandler inventory = new ItemStackHandler(1) {
         @Override
@@ -66,20 +67,20 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
         @Override
         public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
 
-            if (isInUse()) {
-                return stack;
-            } else {
+            if (canAutomationUse()) {
                 return super.insertItem(slot, stack, simulate);
+            } else {
+                return stack;
             }
         }
 
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
 
-            if (isInUse()) {
-                return ItemStack.EMPTY;
-            } else {
+            if (canAutomationUse()) {
                 return super.extractItem(slot, amount, simulate);
+            } else {
+                return ItemStack.EMPTY;
             }
         }
     };
@@ -127,8 +128,20 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
 
 
     /// returns true if there is NO task slip inside and the name is valid, false otherwise
+    public boolean createNewTask(String name, Player player) {
+        if (!this.hasTask() && this.isTaskNameValid(name) && canUse(player)) {
+            forceCreateNewTask();
+            forceSetTaskName(name);
+            markUpdated();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /// returns true if there is NO task slip inside and the name is valid, false otherwise
     public boolean createNewTask(String name) {
-        if (!this.hasTask() && this.isTaskNameValid(name)) {
+        if (!this.hasTask() && this.isTaskNameValid(name) && canAutomationUse()) {
             forceCreateNewTask();
             forceSetTaskName(name);
             markUpdated();
@@ -140,8 +153,8 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
 
     /// returns true if there is NO task slip inside, false otherwise
     /// creates a task with the default name, from the Mod's config
-    public boolean createNewTask() {
-        return createNewTask(defaultTaskName);
+    public boolean createNewTask(@Nullable Player player) {
+        return createNewTask(defaultTaskName, player);
     }
 
 
@@ -217,16 +230,20 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
         return item;
     }
 
-    public boolean isInUse() {
-        return isInUse;
+    public boolean canUse(@Nullable Player player) {
+        return usingPlayer == null || (player != null && player.getUUID().equals(usingPlayer));
     }
 
-    public void markInUse() {
-        isInUse = true;
+    public boolean canAutomationUse() {
+        return usingPlayer == null;
+    }
+
+    public void markInUse(Player player) {
+        usingPlayer = player.getUUID();
     }
 
     public void markNotInUse() {
-        isInUse = false;
+        usingPlayer = null;
         this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
     }
 
@@ -244,10 +261,11 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
         item.set(DataComponents.CUSTOM_NAME, Component.literal(name));
     }
 
+
     protected void forceCreateNewTask() {
         ItemStack newTask = new ItemStack(ProjectBoards.TASK_SLIP.get());
         resetTaskStatus(newTask);
-        inventory.insertItem(TASK_SLOT, newTask, false);
+        inventory.setStackInSlot(TASK_SLOT, newTask);
         resetTaskOwner();
     }
 
