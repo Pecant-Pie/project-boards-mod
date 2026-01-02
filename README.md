@@ -28,4 +28,5 @@ You can shift right-click the same spot to move the status backwards instead.
 - [x] Text displaying the status of a task: 'planned', 'started', or 'finished'
 - [x] Text displaying the 'owner' of a task
 - [x] Item transfer support for Task Boards, so hoppers, droppers, and modded blocks can interact with them
-- [x] Disallow interacting with a Task Board while another player is editing it 
+- [x] Disallow interacting with a Task Board while another player is editing it
+- [ ] Fix outstanding bugs
