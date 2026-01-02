@@ -53,9 +53,7 @@ public class TaskBoardBlock extends BaseEntityBlock {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof TaskBoardBlockEntity tbbe) {
-            ItemStack stack = new ItemStack(ProjectBoards.TASK_SLIP.get());
-            stack.set(DataComponents.CUSTOM_NAME, Component.literal(Config.defaultTaskName));
-            tbbe.inventory.insertItem(0, stack, false);
+            tbbe.forceCreateNewTask();
         }
 
 //        // open task editing menu for the player
