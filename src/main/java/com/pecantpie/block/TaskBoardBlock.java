@@ -225,16 +225,6 @@ public class TaskBoardBlock extends BaseEntityBlock {
                 && hitResult.getDirection() == state.getValue(FACING);
     }
 
-    private boolean isClickOnStatusDecrement(BlockHitResult hitResult, BlockState state, Player player) {
-        BlockPos hitBlock = hitResult.getBlockPos();
-        Vec3 hitLocation = hitResult.getLocation();
-
-        boolean isLeftSide = player.isCrouching();
-
-        return hitLocation.y() < (hitBlock.getY() + (3f / 16f)) && isLeftSide
-                && hitResult.getDirection() == state.getValue(FACING);
-    }
-
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         return super.useWithoutItem(state, level, pos, player, hitResult);
