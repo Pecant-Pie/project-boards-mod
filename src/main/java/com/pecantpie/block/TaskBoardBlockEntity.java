@@ -275,7 +275,7 @@ public class TaskBoardBlockEntity extends BlockEntity implements MenuProvider{
 
     @Override
     public Component getDisplayName() {
-        return Component.translationArg(ResourceLocation.fromNamespaceAndPath(MODID, "gui/edit_task_screen"));
+        return Component.translatable("gui.projectboards.edit_task_screen");
     }
 
 
